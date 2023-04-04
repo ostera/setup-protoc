@@ -16,24 +16,24 @@ import * as installer from "../src/installer";
 
 describe("filename tests", () => {
   const tests = [
-    ["protoc-3.20.2-linux-x86_32.zip", "linux", ""],
-    ["protoc-3.20.2-linux-x86_64.zip", "linux", "x64"],
-    ["protoc-3.20.2-linux-aarch_64.zip", "linux", "arm64"],
-    ["protoc-3.20.2-linux-ppcle_64.zip", "linux", "ppc64"],
-    ["protoc-3.20.2-linux-s390_64.zip", "linux", "s390x"],
-    ["protoc-3.20.2-osx-aarch_64.zip", "darwin", "arm64"],
-    ["protoc-3.20.2-osx-x86_64.zip", "darwin", "x64"]
+    ["protoc-22.3-linux-x86_32.zip", "linux", ""],
+    ["protoc-22.3-linux-x86_64.zip", "linux", "x64"],
+    ["protoc-22.3-linux-aarch_64.zip", "linux", "arm64"],
+    ["protoc-22.3-linux-ppcle_64.zip", "linux", "ppc64"],
+    ["protoc-22.3-linux-s390_64.zip", "linux", "s390x"],
+    ["protoc-22.3-osx-aarch_64.zip", "darwin", "arm64"],
+    ["protoc-22.3-osx-x86_64.zip", "darwin", "x64"],
   ];
   for (const [expected, plat, arch] of tests) {
     it(`downloads ${expected} correctly`, () => {
-      const actual = installer.getFileName("3.20.2", plat, arch);
+      const actual = installer.getFileName("22.3", plat, arch);
       expect(expected).toBe(actual);
     });
   }
 });
 
 describe("installer tests", () => {
-  beforeEach(async function() {
+  beforeEach(async function () {
     await io.rmRF(toolDir);
     await io.rmRF(tempDir);
     await io.mkdirP(toolDir);
@@ -49,20 +49,24 @@ describe("installer tests", () => {
     }
   });
 
-  it("Downloads version of protoc if no matching version is installed", async () => {
-    await installer.getProtoc("3.9.0", true, GITHUB_TOKEN);
-    const protocDir = path.join(toolDir, "protoc", "3.9.0", os.arch());
+  it(
+    "Downloads version of protoc if no matching version is installed",
+    async () => {
+      await installer.getProtoc("3.9.0", true, GITHUB_TOKEN);
+      const protocDir = path.join(toolDir, "protoc", "3.9.0", os.arch());
 
-    expect(fs.existsSync(`${protocDir}.complete`)).toBe(true);
+      expect(fs.existsSync(`${protocDir}.complete`)).toBe(true);
 
-    if (IS_WINDOWS) {
-      expect(fs.existsSync(path.join(protocDir, "bin", "protoc.exe"))).toBe(
-        true
-      );
-    } else {
-      expect(fs.existsSync(path.join(protocDir, "bin", "protoc"))).toBe(true);
-    }
-  }, 100000);
+      if (IS_WINDOWS) {
+        expect(fs.existsSync(path.join(protocDir, "bin", "protoc.exe"))).toBe(
+          true,
+        );
+      } else {
+        expect(fs.existsSync(path.join(protocDir, "bin", "protoc"))).toBe(true);
+      }
+    },
+    100000,
+  );
 
   describe("Gets the latest release of protoc", () => {
     beforeEach(() => {
@@ -84,33 +88,45 @@ describe("installer tests", () => {
       nock.enableNetConnect();
     });
 
-    it("Gets the latest 3.7.x version of protoc using 3.7 and no matching version is installed", async () => {
-      await installer.getProtoc("3.7", true, GITHUB_TOKEN);
-      const protocDir = path.join(toolDir, "protoc", "3.7.1", os.arch());
+    it(
+      "Gets the latest 3.7.x version of protoc using 3.7 and no matching version is installed",
+      async () => {
+        await installer.getProtoc("3.7", true, GITHUB_TOKEN);
+        const protocDir = path.join(toolDir, "protoc", "3.7.1", os.arch());
 
-      expect(fs.existsSync(`${protocDir}.complete`)).toBe(true);
-      if (IS_WINDOWS) {
-        expect(fs.existsSync(path.join(protocDir, "bin", "protoc.exe"))).toBe(
-          true
-        );
-      } else {
-        expect(fs.existsSync(path.join(protocDir, "bin", "protoc"))).toBe(true);
-      }
-    }, 100000);
+        expect(fs.existsSync(`${protocDir}.complete`)).toBe(true);
+        if (IS_WINDOWS) {
+          expect(fs.existsSync(path.join(protocDir, "bin", "protoc.exe"))).toBe(
+            true,
+          );
+        } else {
+          expect(fs.existsSync(path.join(protocDir, "bin", "protoc"))).toBe(
+            true,
+          );
+        }
+      },
+      100000,
+    );
 
-    it("Gets latest version of protoc using 3.x and no matching version is installed", async () => {
-      await installer.getProtoc("3.x", true, GITHUB_TOKEN);
-      const protocDir = path.join(toolDir, "protoc", "3.12.4", os.arch());
+    it(
+      "Gets latest version of protoc using 3.x and no matching version is installed",
+      async () => {
+        await installer.getProtoc("3.x", true, GITHUB_TOKEN);
+        const protocDir = path.join(toolDir, "protoc", "3.12.4", os.arch());
 
-      expect(fs.existsSync(`${protocDir}.complete`)).toBe(true);
-      if (IS_WINDOWS) {
-        expect(fs.existsSync(path.join(protocDir, "bin", "protoc.exe"))).toBe(
-          true
-        );
-      } else {
-        expect(fs.existsSync(path.join(protocDir, "bin", "protoc"))).toBe(true);
-      }
-    }, 100000);
+        expect(fs.existsSync(`${protocDir}.complete`)).toBe(true);
+        if (IS_WINDOWS) {
+          expect(fs.existsSync(path.join(protocDir, "bin", "protoc.exe"))).toBe(
+            true,
+          );
+        } else {
+          expect(fs.existsSync(path.join(protocDir, "bin", "protoc"))).toBe(
+            true,
+          );
+        }
+      },
+      100000,
+    );
   });
 
   describe("Gets the latest release of protoc with broken latest rc tag", () => {
@@ -133,18 +149,24 @@ describe("installer tests", () => {
       nock.enableNetConnect();
     });
 
-    it("Gets latest version of protoc using 3.x with a broken rc tag, filtering pre-releases", async () => {
-      await installer.getProtoc("3.x", false, "");
-      const protocDir = path.join(toolDir, "protoc", "3.9.1", os.arch());
+    it(
+      "Gets latest version of protoc using 3.x with a broken rc tag, filtering pre-releases",
+      async () => {
+        await installer.getProtoc("3.x", false, "");
+        const protocDir = path.join(toolDir, "protoc", "3.9.1", os.arch());
 
-      expect(fs.existsSync(`${protocDir}.complete`)).toBe(true);
-      if (IS_WINDOWS) {
-        expect(fs.existsSync(path.join(protocDir, "bin", "protoc.exe"))).toBe(
-          true
-        );
-      } else {
-        expect(fs.existsSync(path.join(protocDir, "bin", "protoc"))).toBe(true);
-      }
-    }, 100000);
+        expect(fs.existsSync(`${protocDir}.complete`)).toBe(true);
+        if (IS_WINDOWS) {
+          expect(fs.existsSync(path.join(protocDir, "bin", "protoc.exe"))).toBe(
+            true,
+          );
+        } else {
+          expect(fs.existsSync(path.join(protocDir, "bin", "protoc"))).toBe(
+            true,
+          );
+        }
+      },
+      100000,
+    );
   });
 });

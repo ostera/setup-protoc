@@ -38,17 +38,17 @@ interface IProtocRelease {
 export async function getProtoc(
   version: string,
   includePreReleases: boolean,
-  repoToken: string
+  repoToken: string,
 ) {
   // resolve the version number
-  const targetVersion = await computeVersion(
-    version,
-    includePreReleases,
-    repoToken
-  );
-  if (targetVersion) {
-    version = targetVersion;
-  }
+  // const targetVersion = await computeVersion(
+  //   version,
+  //   includePreReleases,
+  //   repoToken,
+  // );
+  // if (targetVersion) {
+  //   version = targetVersion;
+  // }
   process.stdout.write("Getting protoc version: " + version + os.EOL);
 
   // look if the binary is cached
@@ -77,8 +77,8 @@ export async function getProtoc(
       listeners: {
         stdout: (data: Buffer) => {
           stdOut += data.toString();
-        }
-      }
+        },
+      },
     };
 
     await exc.exec("go", ["env", "GOPATH"], options);
@@ -95,7 +95,7 @@ async function downloadRelease(version: string): Promise<string> {
   let downloadUrl: string = util.format(
     "https://github.com/protocolbuffers/protobuf/releases/download/%s/%s",
     version,
-    fileName
+    fileName,
   );
   process.stdout.write("Downloading archive: " + downloadUrl + os.EOL);
 
@@ -115,7 +115,6 @@ async function downloadRelease(version: string): Promise<string> {
 }
 
 /**
- *
  * @param osArch - A string identifying the operating system platform for which the Node.js binary was compiled.
  * See https://nodejs.org/api/os.html#osplatform for possible values.
  * @returns Suffix for the protoc filename.
@@ -149,12 +148,11 @@ function fileNameSuffix(osArch: string): string {
  * @param osArch - The operating system CPU architecture for which the Node.js binary was compiled.
  * See https://nodejs.org/api/os.html#osplatform for more.
  * @returns The filename of the protocol buffer for the given release, platform and architecture.
- *
  */
 export function getFileName(
   version: string,
   osPlat: string,
-  osArch: string
+  osArch: string,
 ): string {
   // to compose the file name, strip the leading `v` char
   if (version.startsWith("v")) {
@@ -179,12 +177,12 @@ export function getFileName(
 // Retrieve a list of versions scraping tags from the Github API
 async function fetchVersions(
   includePreReleases: boolean,
-  repoToken: string
+  repoToken: string,
 ): Promise<string[]> {
   let rest: restm.RestClient;
   if (repoToken != "") {
     rest = new restm.RestClient("setup-protoc", "", [], {
-      headers: { Authorization: "Bearer " + repoToken }
+      headers: { Authorization: "Bearer " + repoToken },
     });
   } else {
     rest = new restm.RestClient("setup-protoc");
@@ -192,11 +190,10 @@ async function fetchVersions(
 
   let tags: IProtocRelease[] = [];
   for (let pageNum = 1, morePages = true; morePages; pageNum++) {
-    let nextPage: IProtocRelease[] =
-      (await rest.get<IProtocRelease[]>(
-        "https://api.github.com/repos/protocolbuffers/protobuf/releases?page=" +
-          pageNum
-      )).result || [];
+    let nextPage: IProtocRelease[] = (await rest.get<IProtocRelease[]>(
+      "https://api.github.com/repos/protocolbuffers/protobuf/releases?page=" +
+        pageNum,
+    )).result || [];
     if (nextPage.length > 0) {
       tags = tags.concat(nextPage);
     } else {
@@ -205,16 +202,16 @@ async function fetchVersions(
   }
 
   return tags
-    .filter(tag => tag.tag_name.match(/v\d+\.[\w\.]+/g))
-    .filter(tag => includePrerelease(tag.prerelease, includePreReleases))
-    .map(tag => tag.tag_name.replace("v", ""));
+    .filter((tag) => tag.tag_name.match(/v\d+\.[\w\.]+/g))
+    .filter((tag) => includePrerelease(tag.prerelease, includePreReleases))
+    .map((tag) => tag.tag_name.replace("v", ""));
 }
 
 // Compute an actual version starting from the `version` configuration param.
 async function computeVersion(
   version: string,
   includePreReleases: boolean,
-  repoToken: string
+  repoToken: string,
 ): Promise<string> {
   // strip leading `v` char (will be re-added later)
   if (version.startsWith("v")) {
@@ -227,15 +224,15 @@ async function computeVersion(
   }
 
   const allVersions = await fetchVersions(includePreReleases, repoToken);
-  const validVersions = allVersions.filter(v => semver.valid(v));
-  const possibleVersions = validVersions.filter(v => v.startsWith(version));
+  const validVersions = allVersions.filter((v) => semver.valid(v));
+  const possibleVersions = validVersions.filter((v) => v.startsWith(version));
 
   const versionMap = new Map();
-  possibleVersions.forEach(v => versionMap.set(normalizeVersion(v), v));
+  possibleVersions.forEach((v) => versionMap.set(normalizeVersion(v), v));
 
   const versions = Array.from(versionMap.keys())
     .sort(semver.rcompare)
-    .map(v => versionMap.get(v));
+    .map((v) => versionMap.get(v));
 
   core.debug(`evaluating ${versions.length} versions`);
 
@@ -261,7 +258,7 @@ function normalizeVersion(version: string): string {
   } else {
     // handle beta and rc
     // e.g. 1.10beta1 -? 1.10.0-beta1, 1.10rc1 -> 1.10.0-rc1
-    if (preStrings.some(el => versionPart[1].includes(el))) {
+    if (preStrings.some((el) => versionPart[1].includes(el))) {
       versionPart[1] = versionPart[1]
         .replace("beta", ".0-beta")
         .replace("rc", ".0-rc")
@@ -277,7 +274,7 @@ function normalizeVersion(version: string): string {
   } else {
     // handle beta and rc
     // e.g. 1.8.5beta1 -> 1.8.5-beta1, 1.8.5rc1 -> 1.8.5-rc1
-    if (preStrings.some(el => versionPart[2].includes(el))) {
+    if (preStrings.some((el) => versionPart[2].includes(el))) {
       versionPart[2] = versionPart[2]
         .replace("beta", "-beta")
         .replace("rc", "-rc")
@@ -291,7 +288,7 @@ function normalizeVersion(version: string): string {
 
 function includePrerelease(
   isPrerelease: boolean,
-  includePrereleases: boolean
+  includePrereleases: boolean,
 ): boolean {
   return includePrereleases || !isPrerelease;
 }
