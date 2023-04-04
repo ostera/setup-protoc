@@ -108,10 +108,12 @@ async function downloadRelease(version: string): Promise<string> {
     throw `Failed to download version ${version}: ${error}`;
   }
 
+  process.stdout.write("Extracting archive at " + downloadPath + os.EOL);
   // Extract
   let extPath: string = downloadPath + "-extracted";
+  await io.mkdirP(extPath);
   process.stdout.write("Extracting archive at " + extPath + os.EOL);
-  await exc.exec(`unzip`, [extPath]);
+  await exc.exec(`unzip`, [downloadPath], {cwd: extPath});
 
   process.stdout.write("Caching archive..." + os.EOL);
 
