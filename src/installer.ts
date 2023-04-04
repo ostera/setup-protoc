@@ -107,11 +107,17 @@ async function downloadRelease(version: string): Promise<string> {
     throw `Failed to download version ${version}: ${error}`;
   }
 
+  process.stdout.write("Extracting archive at " + downloadPath + os.EOL);
   // Extract
   let extPath: string = await tc.extractZip(downloadPath);
 
+  process.stdout.write("Caching archive..." + os.EOL);
+
   // Install into the local tool cache - node extracts with a root folder that matches the fileName downloaded
-  return await tc.cacheDir(extPath, "protoc", version);
+  let cachePath = await tc.cacheDir(extPath, "protoc", version);
+  process.stdout.write("Cached archive at " + cachePath + os.EOL);
+
+  return cachePath
 }
 
 /**
