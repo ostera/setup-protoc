@@ -4238,7 +4238,7 @@
   "resolved" "https://registry.npmjs.org/type-detect/-/type-detect-4.0.8.tgz"
   "version" "4.0.8"
 
-"typed-rest-client@^1.4.0", "typed-rest-client@^1.8.9":
+"typed-rest-client@^1.4.0":
   "integrity" "sha512-uSmjE38B80wjL85UFX3sTYEUlvZ1JgCRhsWj/fJ4rZ0FqDUFoIuodtiVeE+cUqiVTOKPdKrp/sdftD15MDek6g=="
   "resolved" "https://registry.npmjs.org/typed-rest-client/-/typed-rest-client-1.8.9.tgz"
   "version" "1.8.9"
