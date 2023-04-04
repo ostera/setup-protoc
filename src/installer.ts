@@ -6,6 +6,7 @@ import * as path from "path";
 import * as util from "util";
 import * as restm from "typed-rest-client/RestClient";
 import * as semver from "semver";
+import { uuidV4 } from "uuid/v4";
 
 if (!tempDirectory) {
   let baseLocation;
@@ -109,7 +110,10 @@ async function downloadRelease(version: string): Promise<string> {
 
   process.stdout.write("Extracting archive at " + downloadPath + os.EOL);
   // Extract
-  let extPath: string = await tc.extractZip(downloadPath);
+  let outdir = path.join(tempDirectory, uuidV4());
+  await io.mkdirP(outdir);
+  await exc.exec(`unzip`, [downloadPath]);
+  let extPath: string = outdir;
 
   process.stdout.write("Caching archive..." + os.EOL);
 
